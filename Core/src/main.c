@@ -7,30 +7,16 @@
 
 #include "KEY.h"
 
-#define ADC_xBit		4096.0F
-#define	ADC_Vref		3300.0F
-
-#define VOLTAGE_H_RES		26.8F
-#define VOLTAGE_L_RES		2.8F
-#define	VOLTAGE_Gain		( (VOLTAGE_H_RES + VOLTAGE_L_RES) / VOLTAGE_L_RES )
-#define	VOLTAGE_Coeffient	( (ADC_Vref / ADC_xBit) * VOLTAGE_Gain )
-
-#define CURRENT_Gain		50
-#define CURRENT_RES			0.01F
-#define CURRENT_Coeffient	( ADC_Vref / ADC_xBit / CURRENT_Gain / CURRENT_RES )
-
 #define VOLTAGE_FACTOR       1.0F        	// 实际电压与表显电压的比值
 #define CURRENT_FACTOR       1.0F          	// 实际电流与表显电流的比值
 
 #define VOLTAGE_ADC_CHANNEL  ADC_Channel_16_PB14   // 电压采样通道编号
 #define CURRENT_ADC_CHANNEL  ADC_Channel_15_PB13   // 电流采样通道编号
 
-//double	VOLTAGE_Gain;
-//double	VOLTAGE_Coeffient;
-//double	CURRENT_Coeffient;
-
 void BSP_ADC_Init(void);
 uint16_t BSP_ADC_GetData(uint8_t ADC_Channel);
+
+u8 Menu = 0;
 
 int main(void)
 {
@@ -40,7 +26,8 @@ int main(void)
 	// 初始化外设
 	MonoScreen_Init();
 	BSP_ADC_Init();
-
+	Key_Configuration();
+	
 	// 点亮显示屏的全部像素0.5秒（用来测试显示屏）
 	if (RCC_Flag_Status_Get(RCC_FLAG_IWDGRST) == RESET)
 	{
@@ -56,16 +43,9 @@ int main(void)
 	// 配置看门狗
 	IWDG_Config(IWDG_CONFIG_PRESCALER_DIV32, 0xFF0);
 	
-//	//增益计算
-//	VOLTAGE_Gain = (VOLTAGE_H_RES + VOLTAGE_L_RES) / VOLTAGE_L_RES;
-//	VOLTAGE_Coeffient = (ADC_Vref/ADC_xBit) * VOLTAGE_Gain;
-//	
-//	CURRENT_Coeffient = ADC_Vref / ADC_xBit / CURRENT_Gain / CURRENT_RES;
-	
-	
 	// 定义ADC的1LSB与实际电压电流的比值
-	const float volFactor = VOLTAGE_Coeffient * VOLTAGE_FACTOR;
-	const float curFactor = CURRENT_Coeffient * CURRENT_FACTOR;
+	const float volFactor = 8.058608058608059F * VOLTAGE_FACTOR;
+	const float curFactor = 1.611721611721612F * CURRENT_FACTOR;
 	
 	// 定义电压和电流的ADC采样值
 	uint32_t volRaw = 0, curRaw = 0;
@@ -75,8 +55,19 @@ int main(void)
 	uint32_t power = 0;
 
 	char strbuf[256];
+	
 	while (1)
-	{
+	{		
+		switch(Menu)
+		{
+			//一级菜单
+			case 0:
+				
+				break;
+			
+			default: break;
+		}
+		
 		// 采样电压和电流的ADC值，16倍过采样
 		volRaw = 0;
 		curRaw = 0;
