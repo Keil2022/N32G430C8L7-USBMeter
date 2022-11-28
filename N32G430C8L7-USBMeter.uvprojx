@@ -184,7 +184,6 @@
             <hadXRAM>0</hadXRAM>
             <uocXRam>0</uocXRam>
             <RvdsVP>2</RvdsVP>
-            <RvdsMve>0</RvdsMve>
             <hadIRAM2>0</hadIRAM2>
             <hadIROM2>0</hadIROM2>
             <StupSel>8</StupSel>
@@ -338,7 +337,7 @@
               <MiscControls></MiscControls>
               <Define>N32G430, USE_STDPERIPH_DRIVER</Define>
               <Undefine></Undefine>
-              <IncludePath>.\Drivers\CMSIS\core;.\Drivers\CMSIS\device;.\Drivers\n32g430_std_periph_driver\inc;.\Core\inc;.\Lib\MonoScreen;.\Lib\SoftI2C;.\User</IncludePath>
+              <IncludePath>.\Drivers\CMSIS\core;.\Drivers\CMSIS\device;.\Drivers\n32g430_std_periph_driver\inc;.\Core\inc;.\Lib\MonoScreen;.\Lib\SoftI2C;.\User;.\Lib\Key_Scanf</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -574,6 +573,16 @@
               <FileName>SoftI2c.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\Lib\SoftI2C\SoftI2c.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Lib/Key_Scanf</GroupName>
+          <Files>
+            <File>
+              <FileName>KEY.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Lib\Key_Scanf\KEY.c</FilePath>
             </File>
           </Files>
         </Group>

@@ -5,11 +5,29 @@
 
 #include "MonoScreen.h"
 
-#define VOLTAGE_FACTOR       (9.0F/9.68F)        // 实际电压与表显电压的比值
-#define CURRENT_FACTOR       1.0F                 // 实际电流与表显电流的比值
+#include "KEY.h"
+
+#define ADC_xBit		4096.0F
+#define	ADC_Vref		3300.0F
+
+#define VOLTAGE_H_RES		26.8F
+#define VOLTAGE_L_RES		2.8F
+#define	VOLTAGE_Gain		( (VOLTAGE_H_RES + VOLTAGE_L_RES) / VOLTAGE_L_RES )
+#define	VOLTAGE_Coeffient	( (ADC_Vref / ADC_xBit) * VOLTAGE_Gain )
+
+#define CURRENT_Gain		50
+#define CURRENT_RES			0.01F
+#define CURRENT_Coeffient	( ADC_Vref / ADC_xBit / CURRENT_Gain / CURRENT_RES )
+
+#define VOLTAGE_FACTOR       1.0F        	// 实际电压与表显电压的比值
+#define CURRENT_FACTOR       1.0F          	// 实际电流与表显电流的比值
 
 #define VOLTAGE_ADC_CHANNEL  ADC_Channel_16_PB14   // 电压采样通道编号
 #define CURRENT_ADC_CHANNEL  ADC_Channel_15_PB13   // 电流采样通道编号
+
+//double	VOLTAGE_Gain;
+//double	VOLTAGE_Coeffient;
+//double	CURRENT_Coeffient;
 
 void BSP_ADC_Init(void);
 uint16_t BSP_ADC_GetData(uint8_t ADC_Channel);
@@ -37,10 +55,18 @@ int main(void)
 
 	// 配置看门狗
 	IWDG_Config(IWDG_CONFIG_PRESCALER_DIV32, 0xFF0);
-
+	
+//	//增益计算
+//	VOLTAGE_Gain = (VOLTAGE_H_RES + VOLTAGE_L_RES) / VOLTAGE_L_RES;
+//	VOLTAGE_Coeffient = (ADC_Vref/ADC_xBit) * VOLTAGE_Gain;
+//	
+//	CURRENT_Coeffient = ADC_Vref / ADC_xBit / CURRENT_Gain / CURRENT_RES;
+	
+	
 	// 定义ADC的1LSB与实际电压电流的比值
-	const float volFactor = 8.471446586200685F * VOLTAGE_FACTOR;
-	const float curFactor = 1.646382291543582F * CURRENT_FACTOR;
+	const float volFactor = VOLTAGE_Coeffient * VOLTAGE_FACTOR;
+	const float curFactor = CURRENT_Coeffient * CURRENT_FACTOR;
+	
 	// 定义电压和电流的ADC采样值
 	uint32_t volRaw = 0, curRaw = 0;
 	// 定义电压和电流值，单位mV/mA
