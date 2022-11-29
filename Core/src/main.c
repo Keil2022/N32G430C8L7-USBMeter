@@ -18,6 +18,13 @@ uint16_t BSP_ADC_GetData(uint8_t ADC_Channel);
 
 u8 Menu = 0;
 
+#define USB_5V		0
+#define USB_9V		1
+#define USB_12V		2
+#define USB_20V		3
+
+u8 USBOutputvoltage;
+
 int main(void)
 {
 	// 在调试时禁用看门狗
@@ -62,7 +69,29 @@ int main(void)
 		{
 			//一级菜单
 			case 0:
+				/* 显示函数 */
+			
+				if(KEY3_Long_OK)
+				{
+					KEY3_Long_OK = 0;
+					Menu = 1;
+				}
+				break;
 				
+			case 1:
+				/* 显示函数 */
+			
+				
+				if(KEY2_Short_OK)
+				{
+					KEY2_Short_OK = 0;
+					if(USBOutputvoltage < USB_20V)	USBOutputvoltage++;
+				}
+				if(KEY1_Short_OK)
+				{
+					KEY1_Short_OK = 0;
+					if(USBOutputvoltage > USB_5V)	USBOutputvoltage--;
+				}
 				break;
 			
 			default: break;
