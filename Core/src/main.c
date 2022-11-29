@@ -6,6 +6,7 @@
 #include "MonoScreen.h"
 
 #include "KEY.h"
+#include "CH224K.h"
 
 #define VOLTAGE_FACTOR       1.0F        	// 实际电压与表显电压的比值
 #define CURRENT_FACTOR       1.0F          	// 实际电流与表显电流的比值
@@ -21,7 +22,8 @@ u8 Menu = 0;
 #define USB_5V		0
 #define USB_9V		1
 #define USB_12V		2
-#define USB_20V		3
+#define USB_15V		3
+#define USB_20V		4
 
 u8 USBOutputvoltage;
 
@@ -34,6 +36,7 @@ int main(void)
 	MonoScreen_Init();
 	BSP_ADC_Init();
 	Key_Configuration();
+	CH224K_Configuration();
 	
 	// 点亮显示屏的全部像素0.5秒（用来测试显示屏）
 	if (RCC_Flag_Status_Get(RCC_FLAG_IWDGRST) == RESET)
@@ -64,37 +67,21 @@ int main(void)
 	char strbuf[256];
 	
 	while (1)
-	{		
-		switch(Menu)
+	{
+		switch(USBOutputvoltage)
 		{
-			//一级菜单
-			case 0:
-				/* 显示函数 */
-			
-				if(KEY3_Long_OK)
-				{
-					KEY3_Long_OK = 0;
-					Menu = 1;
-				}
+			case USB_5V:	USBOutputvoltage_5V();
 				break;
-				
-			case 1:
-				/* 显示函数 */
-			
-				
-				if(KEY2_Short_OK)
-				{
-					KEY2_Short_OK = 0;
-					if(USBOutputvoltage < USB_20V)	USBOutputvoltage++;
-				}
-				if(KEY1_Short_OK)
-				{
-					KEY1_Short_OK = 0;
-					if(USBOutputvoltage > USB_5V)	USBOutputvoltage--;
-				}
+			case USB_9V:	USBOutputvoltage_9V();
 				break;
-			
-			default: break;
+			case USB_12V:	USBOutputvoltage_12V();
+				break;
+			case USB_15V:	USBOutputvoltage_15V();
+				break;
+			case USB_20V:	USBOutputvoltage_20V();
+				break;
+			default:		USBOutputvoltage_5V();
+				break;
 		}
 		
 		// 采样电压和电流的ADC值，16倍过采样
@@ -113,7 +100,7 @@ int main(void)
 		voltage = volRaw * volFactor;
 		current = curRaw * curFactor;
 		power = current * voltage / 1000;
-
+		
 		// 将计算结果显示到显示屏上
 		MonoScreen_ClearScreen();
 		MonoScreen_setFontSize(2, 2);
@@ -140,6 +127,61 @@ int main(void)
 		MonoScreen_Flush();
 		// here we go:)
 		IWDG_Feed();
+		
+		Key3_Scanf();
+		if(KEY3_Long_OK)
+		{
+			KEY3_Long_OK = 0;
+			KEY3_Time = 0;
+			
+			while(1)
+			{
+				Key_Scanf();
+				if(KEY3_Long_OK)
+				{
+					KEY3_Long_OK = 0;
+					KEY3_Time = 0;
+					break;
+				}
+				if(KEY2_Short_OK)
+				{
+					KEY2_Short_OK = 0;
+					if(USBOutputvoltage < USB_20V)	USBOutputvoltage++;
+				}
+				if(KEY1_Short_OK)
+				{
+					KEY1_Short_OK = 0;
+					if(USBOutputvoltage > USB_5V)	USBOutputvoltage--;
+				}				
+				
+				MonoScreen_ClearScreen();
+				MonoScreen_setFontSize(3, 3);
+				
+				switch(USBOutputvoltage)
+				{
+					case USB_5V:	sprintf(strbuf, "%s", "USB_05V");
+						break;
+					case USB_9V:	sprintf(strbuf, "%s", "USB_09V");
+						break;
+					case USB_12V:	sprintf(strbuf, "%s", "USB_12V");
+						break;
+					case USB_15V:	sprintf(strbuf, "%s", "USB_15V");
+						break;
+					case USB_20V:	sprintf(strbuf, "%s", "USB_20V");
+						break;
+					default:		sprintf(strbuf, "%s", "ERROR");
+						break;
+				}
+				
+				MonoScreen_DrawString(0, 8, strbuf);
+				
+				SysTick_Delay_Ms(5);
+				// 刷新屏幕显示
+				MonoScreen_Flush();
+				// here we go:)
+				IWDG_Feed();
+			}
+		}
 	}
 }
 

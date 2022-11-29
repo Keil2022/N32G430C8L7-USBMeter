@@ -184,6 +184,7 @@
             <hadXRAM>0</hadXRAM>
             <uocXRam>0</uocXRam>
             <RvdsVP>2</RvdsVP>
+            <RvdsMve>0</RvdsMve>
             <hadIRAM2>0</hadIRAM2>
             <hadIROM2>0</hadIROM2>
             <StupSel>8</StupSel>
@@ -337,7 +338,7 @@
               <MiscControls></MiscControls>
               <Define>N32G430, USE_STDPERIPH_DRIVER</Define>
               <Undefine></Undefine>
-              <IncludePath>.\Drivers\CMSIS\core;.\Drivers\CMSIS\device;.\Drivers\n32g430_std_periph_driver\inc;.\Core\inc;.\Lib\MonoScreen;.\Lib\SoftI2C;.\User;.\Lib\Key_Scanf</IncludePath>
+              <IncludePath>.\Drivers\CMSIS\core;.\Drivers\CMSIS\device;.\Drivers\n32g430_std_periph_driver\inc;.\Core\inc;.\Lib\MonoScreen;.\Lib\SoftI2C;.\User;.\Lib\Key_Scanf;.\Lib\CH224K</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -583,6 +584,26 @@
               <FileName>KEY.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\Lib\Key_Scanf\KEY.c</FilePath>
+            </File>
+            <File>
+              <FileName>KEY.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Lib\Key_Scanf\KEY.h</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Lib/CH224K</GroupName>
+          <Files>
+            <File>
+              <FileName>CH224K.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Lib\CH224K\CH224K.c</FilePath>
+            </File>
+            <File>
+              <FileName>CH224K.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Lib\CH224K\CH224K.h</FilePath>
             </File>
           </Files>
         </Group>
