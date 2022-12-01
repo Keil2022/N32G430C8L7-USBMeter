@@ -24,43 +24,24 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * ****************************************************************************/
- 
+
 /**
-*\*\file mian.h
+*\*\file timer_common.h
 *\*\author Nations
 *\*\version v1.0.0
 *\*\copyright Copyright (c) 2019, Nations Technologies Inc. All rights reserved.
 **/
+#ifndef BSP_TIMER_COMMON
+#define BSP_TIMER_COMMON
 
-#ifndef __MAIN_H__
-#define __MAIN_H__
+#include "n32g430_tim.h"
 
-#ifdef __cplusplus
-extern "C" {
+void Common_TIM_Base_Initialize(TIM_Module *TIMx, uint16_t period, uint16_t prescaler);
+
+void Common_TIM_NVIC_Initialize(IRQn_Type IRQ_number, FunctionalState command);
+
+void Common_TIM_DMA_Config(DMA_ChannelType *chan_handle, DMA_InitType *dma_param, uint32_t req_remap);
+
+void Common_TIM_DMA_Start(DMA_ChannelType *chan_handle, uint32_t src_addr, uint32_t dst_addr, uint32_t len);
+
 #endif
-
-#include "n32g430.h"
-
-#include "string.h"
-#include "stdlib.h"
-#include "stddef.h"
-#include "stdbool.h"
-#include "stdio.h"
-
-typedef struct {
-    unsigned char bit0	: 1;
-    unsigned char bit1	: 1;
-    unsigned char bit2	: 1;
-    unsigned char bit3	: 1;
-    unsigned char bit4	: 1;     
-    unsigned char bit5	: 1; 
-    unsigned char bit6	: 1;     
-    unsigned char bit7	: 1;     
-}Flag_t;
-	
-#ifdef __cplusplus
-}
-#endif
-
-#endif /* __MAIN_H__ */
-

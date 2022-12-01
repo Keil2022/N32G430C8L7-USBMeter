@@ -184,7 +184,6 @@
             <hadXRAM>0</hadXRAM>
             <uocXRam>0</uocXRam>
             <RvdsVP>2</RvdsVP>
-            <RvdsMve>0</RvdsMve>
             <hadIRAM2>0</hadIRAM2>
             <hadIROM2>0</hadIROM2>
             <StupSel>8</StupSel>
@@ -338,7 +337,7 @@
               <MiscControls></MiscControls>
               <Define>N32G430, USE_STDPERIPH_DRIVER</Define>
               <Undefine></Undefine>
-              <IncludePath>.\Drivers\CMSIS\core;.\Drivers\CMSIS\device;.\Drivers\n32g430_std_periph_driver\inc;.\Core\inc;.\Lib\MonoScreen;.\Lib\SoftI2C;.\User;.\Lib\Key_Scanf;.\Lib\CH224K</IncludePath>
+              <IncludePath>.\Drivers\CMSIS\core;.\Drivers\CMSIS\device;.\Drivers\n32g430_std_periph_driver\inc;.\Core\inc;.\Lib\MonoScreen;.\Lib\SoftI2C;.\User;.\Lib\Key_Scanf;.\Lib\CH224K;.\Lib\Time6</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -604,6 +603,31 @@
               <FileName>CH224K.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\Lib\CH224K\CH224K.h</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Lib/TIME6</GroupName>
+          <Files>
+            <File>
+              <FileName>Time6.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Lib\Time6\Time6.c</FilePath>
+            </File>
+            <File>
+              <FileName>Time6.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Lib\Time6\Time6.h</FilePath>
+            </File>
+            <File>
+              <FileName>BSTIM_common.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Lib\Time6\BSTIM_common.c</FilePath>
+            </File>
+            <File>
+              <FileName>timer_common.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Lib\Time6\timer_common.c</FilePath>
             </File>
           </Files>
         </Group>

@@ -7,6 +7,7 @@
 
 #include "KEY.h"
 #include "CH224K.h"
+#include "time6.h"
 
 #define VOLTAGE_FACTOR       1.0F        	// 实际电压与表显电压的比值
 #define CURRENT_FACTOR       1.0F          	// 实际电流与表显电流的比值
@@ -25,7 +26,17 @@ u8 Menu = 0;
 #define USB_15V		3
 #define USB_20V		4
 
-u8 USBOutputvoltage;
+u8 USBOutputvoltage = 0, USBOutputvoltage_ls = 0;
+u8 ADC_Conversions_Num = 0;
+
+u8 Expected_Voltage_WaitTIM;
+
+Flag_t Flag;
+#define Per1ms 	(Flag.bit0)
+#define Per10ms (Flag.bit1)
+#define Per20ms (Flag.bit2)
+#define ADC_OK 	(Flag.bit3)
+#define Flush 	(Flag.bit4)
 
 int main(void)
 {
@@ -37,6 +48,7 @@ int main(void)
 	BSP_ADC_Init();
 	Key_Configuration();
 	CH224K_Configuration();
+	TIME6_Configuration();
 	
 	// 点亮显示屏的全部像素0.5秒（用来测试显示屏）
 	if (RCC_Flag_Status_Get(RCC_FLAG_IWDGRST) == RESET)
@@ -68,121 +80,228 @@ int main(void)
 	
 	while (1)
 	{
-		switch(USBOutputvoltage)
-		{
-			case USB_5V:	USBOutputvoltage_5V();
-				break;
-			case USB_9V:	USBOutputvoltage_9V();
-				break;
-			case USB_12V:	USBOutputvoltage_12V();
-				break;
-			case USB_15V:	USBOutputvoltage_15V();
-				break;
-			case USB_20V:	USBOutputvoltage_20V();
-				break;
-			default:		USBOutputvoltage_5V();
-				break;
-		}
-		
-		// 采样电压和电流的ADC值，16倍过采样
-		volRaw = 0;
-		curRaw = 0;
-		for (int i = 0; i < 16; i++)
-		{
-			volRaw += BSP_ADC_GetData(VOLTAGE_ADC_CHANNEL);
-			curRaw += BSP_ADC_GetData(CURRENT_ADC_CHANNEL);
-			SysTick_Delay_Ms(20);
-		}
-		volRaw >>= 4;	//右移4位，即除以16，求平均值
-		curRaw >>= 4;
-
-		// 计算实际的电压、电流和功率
-		voltage = volRaw * volFactor;
-		current = curRaw * curFactor;
-		power = current * voltage / 1000;
-		
-		// 将计算结果显示到显示屏上
-		MonoScreen_ClearScreen();
-		MonoScreen_setFontSize(2, 2);
-
-		sprintf(strbuf, "%u.%02uV", voltage / 1000, (voltage % 1000) / 10);
-		MonoScreen_DrawString(0, 1, strbuf);
-
-		sprintf(strbuf, "%u.%02uA", current / 1000, (current % 1000) / 10);
-		MonoScreen_DrawString(0, 17, strbuf);
-
-		// 功率需要判断显示小数点的位置
-		if (power <= 9999)
-		{
-			sprintf(strbuf, "%u.%02uW", power / 1000, (power % 1000) / 10);
-		}
-		else
-		{
-			sprintf(strbuf, "%u.%uW", power / 1000, (power % 1000) / 100);
-		}
-		MonoScreen_setFontSize(2, 4);
-		MonoScreen_DrawString(67, 2, strbuf);
-
-		// 刷新屏幕显示
-		MonoScreen_Flush();
 		// here we go:)
 		IWDG_Feed();
-		
-		Key3_Scanf();
-		if(KEY3_Long_OK)
+
+		/* 判断USB输出电压是否有改变,有变化再操作 */
+		if(USBOutputvoltage_ls != USBOutputvoltage)	
 		{
-			KEY3_Long_OK = 0;
-			KEY3_Time = 0;
+			USBOutputvoltage_ls = USBOutputvoltage;
 			
-			while(1)
+			switch(USBOutputvoltage)
 			{
-				Key_Scanf();
-				if(KEY3_Long_OK)
-				{
-					KEY3_Long_OK = 0;
-					KEY3_Time = 0;
+				case USB_5V:	USBOutputvoltage_5V();
 					break;
-				}
-				if(KEY2_Short_OK)
-				{
-					KEY2_Short_OK = 0;
-					if(USBOutputvoltage < USB_20V)	USBOutputvoltage++;
-				}
-				if(KEY1_Short_OK)
-				{
-					KEY1_Short_OK = 0;
-					if(USBOutputvoltage > USB_5V)	USBOutputvoltage--;
-				}				
-				
-				MonoScreen_ClearScreen();
-				MonoScreen_setFontSize(3, 3);
-				
-				switch(USBOutputvoltage)
-				{
-					case USB_5V:	sprintf(strbuf, "%s", "USB_05V");
-						break;
-					case USB_9V:	sprintf(strbuf, "%s", "USB_09V");
-						break;
-					case USB_12V:	sprintf(strbuf, "%s", "USB_12V");
-						break;
-					case USB_15V:	sprintf(strbuf, "%s", "USB_15V");
-						break;
-					case USB_20V:	sprintf(strbuf, "%s", "USB_20V");
-						break;
-					default:		sprintf(strbuf, "%s", "ERROR");
-						break;
-				}
-				
-				MonoScreen_DrawString(0, 8, strbuf);
-				
-				SysTick_Delay_Ms(5);
-				// 刷新屏幕显示
-				MonoScreen_Flush();
-				// here we go:)
-				IWDG_Feed();
+				case USB_9V:	USBOutputvoltage_9V();
+					break;
+				case USB_12V:	USBOutputvoltage_12V();
+					break;
+				case USB_15V:	USBOutputvoltage_15V();
+					break;
+				case USB_20V:	USBOutputvoltage_20V();
+					break;
+				default:		USBOutputvoltage_5V();
+					break;
 			}
 		}
+		
+		/* 10ms标志位 */
+		if(Per10ms)
+		{
+			Per10ms = 0;
+			
+			/* 按键判断 */
+			Key_Scanf();
+			if(KEY3_Long_OK)
+			{
+				KEY3_Long_OK = 0;
+				
+				Flush = 1;	//要求刷新显示
+				
+				while(1)
+				{
+					// here we go:)
+					IWDG_Feed();
+					
+					/* 10ms标志位 */
+					if(Per10ms)
+					{
+						Per10ms = 0;
+						
+						/* 按键判断 */
+						Key_Scanf();
+						
+						if(KEY3_Long_OK)
+						{
+							KEY3_Long_OK = 0;
+							
+							ADC_Conversions_Num = 0;
+							ADC_OK = 0;
+							volRaw = 0;	//清零
+							curRaw = 0;
+							
+							Expected_Voltage_WaitTIM = 10;
+							
+							break;
+						}
+						if(KEY2_Short_OK)
+						{
+							KEY2_Short_OK = 0;
+							if(USBOutputvoltage < USB_20V)	USBOutputvoltage++;	Flush = 1;
+						}
+						if(KEY1_Short_OK)
+						{
+							KEY1_Short_OK = 0;
+							if(USBOutputvoltage > USB_5V)	USBOutputvoltage--;	Flush = 1;
+						}
+					}
+					
+					/* 刷新显示请求 */
+					if(Flush)
+					{
+						Flush = 0;
+						
+						MonoScreen_ClearScreen();
+						MonoScreen_setFontSize(3, 3);
+						
+						switch(USBOutputvoltage)
+						{
+							case USB_5V:	sprintf(strbuf, "%s", "USB_05V");
+								break;
+							case USB_9V:	sprintf(strbuf, "%s", "USB_09V");
+								break;
+							case USB_12V:	sprintf(strbuf, "%s", "USB_12V");
+								break;
+							case USB_15V:	sprintf(strbuf, "%s", "USB_15V");
+								break;
+							case USB_20V:	sprintf(strbuf, "%s", "USB_20V");
+								break;
+							default:		sprintf(strbuf, "%s", "ERROR");
+								break;
+						}
+						
+						MonoScreen_DrawString(0, 8, strbuf);
+						
+						// 刷新屏幕显示
+						MonoScreen_Flush();
+					}
+				}
+			}
+		}
+		
+		/* 20ms标志位 */
+		if(Per20ms)
+		{
+			Per20ms = 0;
+			
+			// 采样电压和电流的ADC值，16倍过采样
+			volRaw += BSP_ADC_GetData(VOLTAGE_ADC_CHANNEL);
+			curRaw += BSP_ADC_GetData(CURRENT_ADC_CHANNEL);
+			
+			/* 连续采样16次 */
+			if(++ADC_Conversions_Num >= 16)
+			{
+				ADC_Conversions_Num = 0;
+				ADC_OK = 1;
+			}
+		}
+		
+		/* ADC转换完成标志位，转换完成再计算并更新显示 */
+		if(ADC_OK)
+		{
+			ADC_OK = 0;
+			
+			volRaw >>= 4;	//右移4位，即除以16，求平均值
+			curRaw >>= 4;
+			
+			// 计算实际的电压、电流和功率
+			voltage = volRaw * volFactor;
+			current = curRaw * curFactor;
+			power = current * voltage / 1000;
+			
+			volRaw = 0;	//清零
+			curRaw = 0;
+			
+			// 将计算结果显示到显示屏上
+			MonoScreen_ClearScreen();
+			MonoScreen_setFontSize(2, 2);
+
+			if(voltage <= 9999)
+			{
+				sprintf(strbuf, "%u.%02uV", voltage / 1000, (voltage % 1000) / 10);			
+			}
+			else
+			{
+				sprintf(strbuf, "%02u.%uV", voltage / 1000, (voltage % 1000) / 100);
+			}
+			MonoScreen_DrawString(0, 1, strbuf);
+
+			if(current <= 999)
+			{
+				sprintf(strbuf, "%03umA", current);
+			}
+			else
+			{
+				sprintf(strbuf, "%u.%02uA", current / 1000, (current % 1000) / 10);
+			}
+			MonoScreen_DrawString(0, 17, strbuf);
+
+			// 功率需要判断显示小数点的位置
+			if (power <= 9999)
+			{
+				sprintf(strbuf, "%u.%02uW", power / 1000, (power % 1000) / 10);
+			}
+			else
+			{
+				sprintf(strbuf, "%u.%uW", power / 1000, (power % 1000) / 100);
+			}
+			MonoScreen_setFontSize(2, 4);
+			MonoScreen_DrawString(67, 2, strbuf);
+
+			// 刷新屏幕显示
+			MonoScreen_Flush();
+			
+			if(Expected_Voltage_WaitTIM > 0) Expected_Voltage_WaitTIM--;
+		}
+		
+		//等待一段时间后判断电压区间
+		if(Expected_Voltage_WaitTIM == 0)
+		{
+			u8 Virtual_Voltage = power / 1000;
+			
+			if(Virtual_Voltage>=4 && Virtual_Voltage<=6)			USBOutputvoltage = USB_5V;
+			else if(Virtual_Voltage>=8 && Virtual_Voltage<=10)		USBOutputvoltage = USB_9V;
+			else if(Virtual_Voltage>=11 && Virtual_Voltage<=13)		USBOutputvoltage = USB_12V;
+			else if(Virtual_Voltage>=14 && Virtual_Voltage<=16)		USBOutputvoltage = USB_15V;
+			else if(Virtual_Voltage>=19 && Virtual_Voltage<=21)		USBOutputvoltage = USB_20V;
+		}
 	}
+}
+
+void TIM6_IRQHandler(void)
+{
+    static u8 t00, t01;
+	
+	if (TIM_Interrupt_Status_Get(TIM6, TIM_INT_UPDATE) != RESET)
+    {
+        TIM_Interrupt_Status_Clear(TIM6, TIM_INT_UPDATE);
+		
+		Per1ms = 1;
+		
+		if( ++t00 >= 10)
+		{
+			t00 = 0;
+			Per10ms = 1;
+			
+			if( ++t01 >= 2)
+			{
+				t01 = 0;
+				Per20ms = 1;
+			}			
+		}
+		
+
+    }
 }
 
 void BSP_ADC_Init()

@@ -20,11 +20,14 @@ extern u16 KEY1_Time;
 
 extern u8 KEY3_Long_OK;
 extern u8 KEY3_Short_OK;
+
+extern u8 KEY2_Long_OK;
 extern u8 KEY2_Short_OK;
+
+extern u8 KEY1_Long_OK;
 extern u8 KEY1_Short_OK;
 
 void Key_Configuration(void);
-void Key3_Scanf(void);
 void Key_Scanf(void);
 
 #endif

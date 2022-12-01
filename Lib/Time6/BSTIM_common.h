@@ -24,43 +24,19 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * ****************************************************************************/
- 
+
 /**
-*\*\file mian.h
-*\*\author Nations
+*\*\file BSTIM_common.h
+*\*\author Nations 
 *\*\version v1.0.0
 *\*\copyright Copyright (c) 2019, Nations Technologies Inc. All rights reserved.
 **/
+#ifndef BSTIM_COMMON_H
+#define BSTIM_COMMON_H
 
-#ifndef __MAIN_H__
-#define __MAIN_H__
+#include "n32g430_rcc.h"
+#include "n32g430_tim.h"
 
-#ifdef __cplusplus
-extern "C" {
+uint32_t Common_BSTIM_RCC_Initialize(TIM_Module *TIMx, uint32_t hclk_division);
+
 #endif
-
-#include "n32g430.h"
-
-#include "string.h"
-#include "stdlib.h"
-#include "stddef.h"
-#include "stdbool.h"
-#include "stdio.h"
-
-typedef struct {
-    unsigned char bit0	: 1;
-    unsigned char bit1	: 1;
-    unsigned char bit2	: 1;
-    unsigned char bit3	: 1;
-    unsigned char bit4	: 1;     
-    unsigned char bit5	: 1; 
-    unsigned char bit6	: 1;     
-    unsigned char bit7	: 1;     
-}Flag_t;
-	
-#ifdef __cplusplus
-}
-#endif
-
-#endif /* __MAIN_H__ */
-

@@ -28,65 +28,6 @@ void Key_Configuration(void)
 	GPIO_Peripheral_Initialize(KEY_GPIO_PORT, &GPIO_InitStructure);
 }
 
-void Key3_Scanf(void)
-{
-	switch(KEY3_Phase)
-	{
-		//短按
-		case 0:
-			if(KEY3 == RESET)
-			{
-				KEY3_Time++;
-				if(KEY3_Time >= 2)
-				{
-					KEY3_Phase = 1;
-					
-					KEY3_Long_OK = 1;
-				}
-			}
-			else
-			{
-				if(KEY3_Time >= Time_Short)
-				{
-					KEY3_Time = 0;
-					KEY3_Short_OK = 1;
-				}
-			}
-			break;
-		
-		//长按
-		case 1:
-			if(KEY3 == RESET)
-			{
-				KEY3_Time++;
-				if(KEY3_Time >= Time_Loosen)
-				{
-					KEY3_Phase = 2;
-				}
-			}
-			else
-			{
-				KEY3_Time = 0;
-				KEY3_Phase = 0;
-			}
-			break;
-		
-		//等待松手
-		case 2:
-			if(KEY3 == SET)
-			{
-				KEY3_Time = 0;
-				KEY3_Phase = 0;
-			}
-			break;
-		
-		default:
-			KEY3_Phase = 0;
-			KEY3_Time = 0;
-			break;
-	}
-}
-
 void Key_Scanf(void)
 {
 	switch(KEY3_Phase)

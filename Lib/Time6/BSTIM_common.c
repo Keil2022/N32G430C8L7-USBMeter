@@ -24,43 +24,51 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * ****************************************************************************/
- 
+
 /**
-*\*\file mian.h
-*\*\author Nations
+*\*\file BSTIM_common.c
+*\*\author Nations 
 *\*\version v1.0.0
 *\*\copyright Copyright (c) 2019, Nations Technologies Inc. All rights reserved.
 **/
+#include "BSTIM_common.h"
 
-#ifndef __MAIN_H__
-#define __MAIN_H__
+/**
+*\*\name    Common_BSTIM_RCC_Initialize.
+*\*\param   TIMx :
+*\*\          - TIM6
+*\*\param   hclk_division
+*\*\          - RCC_HCLK_DIV1
+*\*\          - RCC_HCLK_DIV2
+*\*\          - RCC_HCLK_DIV4
+*\*\          - RCC_HCLK_DIV8
+*\*\          - RCC_HCLK_DIV16
+*\*\return  uint32_t
+**/
+uint32_t Common_BSTIM_RCC_Initialize(TIM_Module *TIMx, uint32_t hclk_division)
+{
+    uint32_t BSTIM_clock;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+    RCC_ClocksType RCC_Clocks;
 
-#include "n32g430.h"
+    RCC_AHB_Peripheral_Clock_Enable(RCC_AHB_PERIPH_GPIOA | RCC_AHB_PERIPH_GPIOB| RCC_AHB_PERIPH_GPIOC 
+                                       | RCC_AHB_PERIPH_GPIOD);
+    
+    RCC_APB2_Peripheral_Clock_Enable(RCC_APB2_PERIPH_AFIO);
+    
+    RCC_Pclk1_Config(hclk_division);
 
-#include "string.h"
-#include "stdlib.h"
-#include "stddef.h"
-#include "stdbool.h"
-#include "stdio.h"
+    RCC_APB1_Peripheral_Clock_Enable(RCC_APB1_PERIPH_TIM6);
 
-typedef struct {
-    unsigned char bit0	: 1;
-    unsigned char bit1	: 1;
-    unsigned char bit2	: 1;
-    unsigned char bit3	: 1;
-    unsigned char bit4	: 1;     
-    unsigned char bit5	: 1; 
-    unsigned char bit6	: 1;     
-    unsigned char bit7	: 1;     
-}Flag_t;
-	
-#ifdef __cplusplus
+    RCC_Clocks_Frequencies_Value_Get(&RCC_Clocks);
+
+    if(RCC_Clocks.HclkFreq > RCC_Clocks.Pclk1Freq) 
+    {
+        BSTIM_clock = RCC_Clocks.Pclk1Freq * 2; 
+    }
+    else
+    {
+        BSTIM_clock = RCC_Clocks.Pclk1Freq;
+    }
+    return BSTIM_clock;
 }
-#endif
-
-#endif /* __MAIN_H__ */
-
