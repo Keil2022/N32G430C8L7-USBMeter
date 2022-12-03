@@ -9,8 +9,8 @@
 #include "CH224K.h"
 #include "time6.h"
 
-#define VOLTAGE_FACTOR       1.0F        	// 实际电压与表显电压的比值
-#define CURRENT_FACTOR       1.0F          	// 实际电流与表显电流的比值
+#define VOLTAGE_FACTOR       0.9887640449438202F        	// 实际电压与表显电压的比值
+#define CURRENT_FACTOR       1.2F          					// 实际电流与表显电流的比值
 
 #define VOLTAGE_ADC_CHANNEL  ADC_Channel_16_PB14   // 电压采样通道编号
 #define CURRENT_ADC_CHANNEL  ADC_Channel_15_PB13   // 电流采样通道编号
@@ -26,7 +26,7 @@ u8 Menu = 0;
 #define USB_15V		3
 #define USB_20V		4
 
-u8 USBOutputvoltage = 0, USBOutputvoltage_ls = 0;
+u8 USBOutputvoltage = 0, USBOutputvoltage_ls = 1;
 u8 ADC_Conversions_Num = 0;
 
 u8 Expected_Voltage_WaitTIM;
@@ -66,8 +66,8 @@ int main(void)
 	IWDG_Config(IWDG_CONFIG_PRESCALER_DIV32, 0xFF0);
 	
 	// 定义ADC的1LSB与实际电压电流的比值
-	const float volFactor = 8.058608058608059F * VOLTAGE_FACTOR;
-	const float curFactor = 1.611721611721612F * CURRENT_FACTOR;
+	const float volFactor = 8.042328042328042F * VOLTAGE_FACTOR;
+	const float curFactor = 1.646382291543582F * CURRENT_FACTOR;
 	
 	// 定义电压和电流的ADC采样值
 	uint32_t volRaw = 0, curRaw = 0;
@@ -267,7 +267,7 @@ int main(void)
 		//等待一段时间后判断电压区间
 		if(Expected_Voltage_WaitTIM == 0)
 		{
-			u8 Virtual_Voltage = power / 1000;
+			u8 Virtual_Voltage = voltage / 1000;
 			
 			if(Virtual_Voltage>=4 && Virtual_Voltage<=6)			USBOutputvoltage = USB_5V;
 			else if(Virtual_Voltage>=8 && Virtual_Voltage<=10)		USBOutputvoltage = USB_9V;
